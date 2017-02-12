@@ -1,0 +1,25 @@
+import csv
+from pandas import DataFrame, merge, Series
+
+df_prod= DataFrame.from_csv("products.csv", index_col=False)
+
+def change_to_kg(df_prod):
+	if df_prod["Unit"]=="Grams":
+		df_prod["Price"].divide(df_prod["Weight"]/1000.0)
+	else:
+		df_prod["Price"].divide(df_prod["Weight"])
+df_prod["price_per_kg"] = df_prod["Price"].divide(df_prod["Weight"])
+
+for item, row in df_prod.iterrows():
+	if row["Unit"]=="Grams":
+		row["price_per_kg"]=row["price_per_kg"]*1000
+		df_prod.set_value(item,"price_per_kg",row["price_per_kg"])
+
+
+#print df_prod["price_per_kg"]
+
+
+idx= df_prod.groupby(["Product Code"], sort=False)["price_per_kg"].transform(max) == df_prod["price_per_kg"]
+#print df_prod[idx].loc[df_prod["Product Code"]==3736]
+print df_prod[idx].values.tolist()
+#print df_prod[idx]
